@@ -934,6 +934,9 @@ body {
   height: 54px;
   width: 54px;
   object-fit: contain;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 .al-word {
