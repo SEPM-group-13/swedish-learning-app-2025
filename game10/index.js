@@ -53,6 +53,7 @@ function renderMenu() {
 }
 
 let wordSort = "az";
+let wordReverse = false;
 
 function renderWords() {
   const lang = getLang();
@@ -61,24 +62,23 @@ function renderWords() {
   document.querySelectorAll("[data-sort]").forEach((btn) => {
     btn.classList.toggle("is-on", btn.dataset.sort === wordSort);
   });
+  document.querySelector('[data-sort="az"]').textContent = wordReverse ? "Ö–A" : "A–Ö";
+  document.getElementById("words-reverse").classList.toggle("is-on", wordReverse);
   const bar = (label, weight) => {
     const cls = weight >= PLATEAU ? "is-full" : weight > 0 ? "is-half" : "";
     return `<div class="al-word-score">${label} ${weight}/${PLATEAU}<div class="al-bar"><span class="${cls}" style="width:${(weight / PLATEAU) * 100}%"></span></div></div>`;
   };
   const score = (id, mode) => bar(t(lang, mode), getWeight(progress, id, mode));
   document.getElementById("words-list").innerHTML = foodItems()
-    .map((item) => ({
-      item,
-      points: getWeight(progress, item.id, "recognition") + getWeight(progress, item.id, "spelling")
-    }))
     .sort((a, b) => {
-      if (wordSort === "most" && a.points !== b.points) return b.points - a.points;
-      if (wordSort === "least" && a.points !== b.points) return a.points - b.points;
-      return a.item.sv.localeCompare(b.item.sv, "sv");
+      let order = a.sv.localeCompare(b.sv, "sv");
+      if (wordSort !== "az") {
+        order = getWeight(progress, b.id, wordSort) - getWeight(progress, a.id, wordSort) || order;
+      }
+      return wordReverse ? -order : order;
     })
-    .map(({ item }) => item)
-    .map((item) => {
-      return `<div class="al-word-row">
+    .map((item, i) => {
+      return `<div class="al-word-row" style="--i:${Math.min(i, 12)}">
         <img src="${vocabUrl(item.img)}" alt="">
         <div class="al-word-name">${item.sv}<span>${item.en || ""}</span></div>
         ${score(item.id, "recognition")}
@@ -125,6 +125,10 @@ whenReady(() => {
       wordSort = btn.dataset.sort;
       renderWords();
     });
+  });
+  document.getElementById("words-reverse").addEventListener("click", () => {
+    wordReverse = !wordReverse;
+    renderWords();
   });
   document.getElementById("words-close").addEventListener("click", () => wordsModal.classList.remove("is-on"));
 

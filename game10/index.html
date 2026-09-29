@@ -103,10 +103,13 @@
       <div class="al-dialog al-words-dialog">
         <h2 data-i18n="wordsTitle"></h2>
         <p data-i18n="masteredRule"></p>
-        <div class="al-lang al-words-sort">
-          <button type="button" data-sort="az" data-i18n="sortAz" class="is-on"></button>
-          <button type="button" data-sort="most" data-i18n="sortMost"></button>
-          <button type="button" data-sort="least" data-i18n="sortLeast"></button>
+        <div class="al-words-tools">
+          <div class="al-lang">
+            <button type="button" data-sort="az" class="is-on"></button>
+            <button type="button" data-sort="recognition" data-i18n="recognition"></button>
+            <button type="button" data-sort="spelling" data-i18n="spelling"></button>
+          </div>
+          <button type="button" class="al-words-reverse" id="words-reverse"><i class="fa-solid fa-arrow-down-wide-short"></i></button>
         </div>
         <div class="al-words" id="words-list"></div>
         <div class="al-dialog-row">
