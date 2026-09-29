@@ -21,6 +21,7 @@ Owned by Game 10
   --al-rule: #e0d8cc;
   --al-green: #1f6b3a;
   --al-green-ink: #154d2a;
+  --al-yellow: #d9a400;
 }
 
 html,
@@ -298,6 +299,148 @@ body {
   display: block;
   height: 100%;
   background: var(--al-red);
+}
+
+.al-words-open {
+  margin-left: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--al-red);
+  cursor: pointer;
+}
+
+.al-words-dialog {
+  width: 520px;
+}
+
+.al-words-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.al-words-tools .al-lang button {
+  transition: background 0.2s, color 0.2s;
+}
+
+.al-words-reverse {
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid var(--al-red);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--al-red);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.al-words-reverse:hover {
+  background: var(--al-red);
+  color: #fff;
+}
+
+.al-words-reverse i {
+  transition: transform 0.3s;
+}
+
+.al-words-reverse.is-on i {
+  transform: rotate(180deg);
+}
+
+#words-modal.is-on {
+  animation: al-fade 0.2s ease-out;
+}
+
+#words-modal.is-on .al-words-dialog {
+  animation: al-pop 0.25s ease-out;
+}
+
+@keyframes al-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes al-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+}
+
+@keyframes al-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes al-bar-grow {
+  from {
+    width: 0;
+  }
+}
+
+.al-words {
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 14px;
+}
+
+.al-word-row {
+  animation: al-row-in 0.3s ease-out both;
+  animation-delay: calc(var(--i) * 25ms);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--al-rule);
+}
+
+.al-word-row img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.al-word-name {
+  flex: 1;
+  min-width: 0;
+  font: 600 15px "Work Sans", sans-serif;
+  color: var(--al-ink);
+}
+
+.al-word-name span {
+  display: block;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--al-muted);
+}
+
+.al-word-score {
+  width: 96px;
+  font: 500 11px "Work Sans", sans-serif;
+  color: var(--al-body);
+}
+
+.al-word-score .al-bar {
+  width: 100%;
+  margin-top: 3px;
+}
+
+.al-word-score .al-bar > span {
+  animation: al-bar-grow 0.6s ease-out both;
+  animation-delay: calc(var(--i) * 25ms + 0.15s);
+}
+
+.al-bar > span.is-half {
+  background: var(--al-yellow);
+}
+
+.al-bar > span.is-full {
+  background: var(--al-green);
 }
 
 .al-rule-line {

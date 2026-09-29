@@ -5,7 +5,12 @@
 export const STR = {
   en: {
     tagline: "Swedish food words — at your own pace",
-    learned: "words learned",
+    learned: "words mastered",
+    wordsTitle: "Your words",
+    recognition: "Recognise",
+    spelling: "Spell",
+    close: "Close",
+    masteredRule: "A word is mastered when both Recognise and Spell reach {n}/{n}.",
     learning: "Learning Mode",
     noScore: "No score, no timer",
     learningDesc: "Flip cards, hear the word, keep the ones you know.",
@@ -79,7 +84,12 @@ export const STR = {
   },
   sv: {
     tagline: "Svenska matord — i din egen takt",
-    learned: "inlärda ord",
+    learned: "bemästrade ord",
+    wordsTitle: "Dina ord",
+    recognition: "Känna igen",
+    spelling: "Stava",
+    close: "Stäng",
+    masteredRule: "Ett ord är bemästrat när både Känna igen och Stava når {n}/{n}.",
     learning: "Inlärningsläge",
     noScore: "Inga poäng, ingen tidtagning",
     learningDesc: "Vänd korten, lyssna på uttalet och behåll orden du redan kan.",
