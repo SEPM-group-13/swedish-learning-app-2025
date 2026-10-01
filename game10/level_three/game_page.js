@@ -48,6 +48,46 @@ function current() {
   return words[qIndex];
 }
 
+// just a simple levenstein distance for the user to have an understanding on how close they got
+function levenshteinDistance(a, b) {
+  const rows = a.length + 1;
+  const cols = b.length + 1;
+  const matrix = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+  for (let i = 0; i < rows; i += 1) matrix[i][0] = i;
+  for (let j = 0; j < cols; j += 1) matrix[0][j] = j;
+
+  for (let i = 1; i < rows; i += 1) {
+    for (let j = 1; j < cols; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
+  }
+
+  return matrix[a.length][b.length];
+}
+
+function getCloseness(typed, target) {
+  const normalizedTyped = normalizeAnswer(typed);
+  const normalizedTarget = normalizeAnswer(target);
+
+  if (!normalizedTyped || !normalizedTarget) return "notClose";
+
+  const distance = levenshteinDistance(normalizedTyped, normalizedTarget);
+  const maxLength = Math.max(normalizedTyped.length, normalizedTarget.length);
+  const similarity = 1 - distance / maxLength;
+
+  if (distance === 1) return "veryClose";
+  if (distance === 2 && similarity >= 0.6) return "gettingClose";
+
+  return "notClose";
+}
+
 function updateHud() {
   const ok = results.filter((r) => r === true).length;
   const no = results.filter((r) => r === false).length;
@@ -88,6 +128,8 @@ function submitAnswer() {
     document.getElementById("popup-ok").classList.add("is-on");
   } else {
     document.getElementById("typed").textContent = lastTyped || "—";
+    const closeness = getCloseness(lastTyped, word.sv);
+    document.getElementById("closeness-feedback").textContent = t(lang, closeness);
     document.getElementById("no-img").src = vocabUrl(word.img);
     document.getElementById("no-sv").innerHTML = `${word.sv} <span style="font-size:15px;font-weight:400;color:#555">— ${word.en || ""}</span>`;
     document.getElementById("popup-no").classList.add("is-on");
