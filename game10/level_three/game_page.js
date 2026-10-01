@@ -48,8 +48,11 @@ function current() {
   return words[qIndex];
 }
 
-// just a simple levenstein distance for the user to have an understanding on how close they got
-function levenshteinDistance(a, b) {
+// Use Levenshtein distance to make it clearer which spelling mistakes were made
+function getSpellingDiff(typed, target) {
+  const a = normalizeAnswer(typed);
+  const b = normalizeAnswer(target);
+
   const rows = a.length + 1;
   const cols = b.length + 1;
   const matrix = Array.from({ length: rows }, () => Array(cols).fill(0));
@@ -69,23 +72,65 @@ function levenshteinDistance(a, b) {
     }
   }
 
-  return matrix[a.length][b.length];
+  const diff = [];
+  let i = a.length;
+  let j = b.length;
+
+  while (i > 0 || j > 0) {
+    // Same character
+    if (
+      i > 0 &&
+      j > 0 &&
+      a[i - 1] === b[j - 1] &&
+      matrix[i][j] === matrix[i - 1][j - 1]
+    ) {
+      diff.push({ char: a[i - 1], error: false });
+      i -= 1;
+      j -= 1;
+    }
+    // Wrong character
+    else if (
+      i > 0 &&
+      j > 0 &&
+      matrix[i][j] === matrix[i - 1][j - 1] + 1
+    ) {
+      diff.push({ char: a[i - 1], error: true });
+      i -= 1;
+      j -= 1;
+    }
+    // Extra character typed
+    else if (
+      i > 0 &&
+      matrix[i][j] === matrix[i - 1][j] + 1
+    ) {
+      diff.push({ char: a[i - 1], error: true });
+      i -= 1;
+    }
+    // Missing character
+    else {
+      diff.push({ char: "_", error: true });
+      j -= 1;
+    }
+  }
+
+  return diff.reverse();
 }
 
-function getCloseness(typed, target) {
-  const normalizedTyped = normalizeAnswer(typed);
-  const normalizedTarget = normalizeAnswer(target);
+function renderSpellingDiff(element, typed, target) {
+  const diff = getSpellingDiff(typed, target);
 
-  if (!normalizedTyped || !normalizedTarget) return "notClose";
+  element.textContent = "";
 
-  const distance = levenshteinDistance(normalizedTyped, normalizedTarget);
-  const maxLength = Math.max(normalizedTyped.length, normalizedTarget.length);
-  const similarity = 1 - distance / maxLength;
+  diff.forEach(({ char, error }) => {
+    const span = document.createElement("span");
+    span.textContent = char;
 
-  if (distance === 1) return "veryClose";
-  if (distance === 2 && similarity >= 0.6) return "gettingClose";
+    if (error) {
+      span.classList.add("spelling-error");
+    }
 
-  return "notClose";
+    element.appendChild(span);
+  });
 }
 
 function updateHud() {
@@ -127,9 +172,8 @@ function submitAnswer() {
     document.getElementById("ok-sv").textContent = word.sv;
     document.getElementById("popup-ok").classList.add("is-on");
   } else {
-    document.getElementById("typed").textContent = lastTyped || "—";
-    const closeness = getCloseness(lastTyped, word.sv);
-    document.getElementById("closeness-feedback").textContent = t(lang, closeness);
+    renderSpellingDiff(document.getElementById("typed"), lastTyped || "—", word.sv);
+    document.getElementById("closeness-feedback").textContent = t(lang, "spellingFeedback");
     document.getElementById("no-img").src = vocabUrl(word.img);
     document.getElementById("no-sv").innerHTML = `${word.sv} <span style="font-size:15px;font-weight:400;color:#555">— ${word.en || ""}</span>`;
     document.getElementById("popup-no").classList.add("is-on");
