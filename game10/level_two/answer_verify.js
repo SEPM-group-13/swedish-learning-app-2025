@@ -83,15 +83,15 @@ function render() {
 
   document.getElementById("continue").addEventListener("click", () => {
     graded.forEach((g) => changeWeight(g.leftItem.id, "recognition", g.correct ? 1 : -1));
-    const { progress, total, unlockedNext } = recordLevelScore(2, roundScore);
+    const { total } = recordLevelScore(2, roundScore);
     document.getElementById("done-score").textContent = String(roundScore);
-    document.getElementById("next-level").style.display = progress.currentLevel >= 3 ? "flex" : "none";
+    document.getElementById("next-level").style.display = "flex";
     document.getElementById("done-note").textContent = roundSummary(lang, {
       round: roundScore,
       max: PAIR_COUNT,
       level: 2,
       total,
-      unlockedNext
+      unlockedNext: false
     });
     show("done");
   });

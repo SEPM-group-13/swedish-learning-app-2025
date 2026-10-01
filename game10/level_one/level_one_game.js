@@ -112,17 +112,13 @@ function finishRound() {
   document.getElementById("done-score").textContent = String(roundScore);
   renderPips(document.getElementById("pips-done"), results, -1, TOTAL);
   const next = document.getElementById("next-level");
-  if (progress.currentLevel >= 2) {
-    next.style.display = "flex";
-  } else {
-    next.style.display = "none";
-  }
-  document.getElementById("done-note").textContent = roundSummary(lang, {
+  document.getElementById("next-level").style.display = "flex";
+    document.getElementById("done-note").textContent = roundSummary(lang, {
     round: roundScore,
     max: TOTAL,
     level: 1,
     total,
-    unlockedNext
+    unlockedNext: false
   });
   show("done");
 }
