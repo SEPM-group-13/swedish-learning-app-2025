@@ -31,24 +31,14 @@ function renderMenu() {
   document.getElementById("learned-total").textContent = String(foods.length);
   document.getElementById("learned-bar").style.width = Math.min(100, (learned / total) * 100) + "%";
 
-  document.querySelectorAll("[data-score]").forEach((el) => {
+    document.querySelectorAll("[data-score]").forEach((el) => {
     const level = Number(el.dataset.score);
     const score = Math.min(progress.levelScores[level] || 0, SCORE_TO_PASS);
-    const locked = progress.currentLevel < level;
-    if (locked) {
-      el.innerHTML = `<i class="fa-solid fa-lock" style="color:#9d0000;font-size:10px;margin-right:5px"></i>${t(lang, "needTen", { n: level - 1 })}`;
-    } else if (score >= SCORE_TO_PASS) {
-      const done = level < 3 ? t(lang, "nextOpen") : t(lang, "gameWon");
-      el.innerHTML = `<i class="fa-solid fa-check" style="color:#1f6b3a;font-size:10px;margin-right:5px"></i>${t(lang, "best")} ${score}/${SCORE_TO_PASS} — ${done}`;
+    if (score >= SCORE_TO_PASS) {
+      el.innerHTML = `<i class="fa-solid fa-check" style="color:#1f6b3a;font-size:10px;margin-right:5px"></i>${t(lang, "best")} ${score}/${SCORE_TO_PASS}`;
     } else {
-      const goal = level < 3 ? t(lang, "toUnlockNext", { n: level + 1 }) : t(lang, "toFinish");
-      el.innerHTML = `<i class="fa-solid fa-star" style="color:#9d0000;font-size:10px;margin-right:5px"></i>${t(lang, "best")} ${score}/${SCORE_TO_PASS} — ${goal}`;
+      el.innerHTML = `<i class="fa-solid fa-star" style="color:#9d0000;font-size:10px;margin-right:5px"></i>${t(lang, "best")} ${score}/${SCORE_TO_PASS}`;
     }
-  });
-
-  document.querySelectorAll(".al-level-card").forEach((card) => {
-    const level = Number(card.dataset.level);
-    card.classList.toggle("is-locked", progress.currentLevel < level);
   });
 }
 
@@ -104,13 +94,7 @@ whenReady(() => {
 
   document.querySelectorAll(".al-level-card").forEach((card) => {
     card.addEventListener("click", () => {
-      const lang = getLang();
-      const progress = loadProgress();
       const level = Number(card.dataset.level);
-      if (progress.currentLevel < level) {
-        alert(t(lang, "locked", { n: level - 1 }));
-        return;
-      }
       window.location.href = LEVEL_HREF[level];
     });
   });
