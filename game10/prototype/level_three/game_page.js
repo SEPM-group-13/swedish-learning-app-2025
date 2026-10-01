@@ -26,6 +26,7 @@ let words = [];
 let qIndex = 0;
 let results = [];
 let lastTyped = "";
+let enterHeld = false;
 
 function applyI18n() {
   document.documentElement.lang = lang;
@@ -162,6 +163,26 @@ whenReady(() => {
   document.getElementById("again").addEventListener("click", () => show("intro"));
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Enter") return;
-    if (document.getElementById("popup-ok").classList.contains("is-on")) nextQuestion();
+
+    if (enterHeld) {
+      e.preventDefault();
+      return;
+    }
+
+    enterHeld = true;
+
+    if (document.getElementById("popup-ok").classList.contains("is-on")) {
+      e.preventDefault();
+      nextQuestion();
+    } else if (document.getElementById("popup-no").classList.contains("is-on")) {
+      e.preventDefault();
+      acceptWrongAndNext();
+    }
+
+  });
+  document.addEventListener("keyup", (e) => {
+    if (e.key === "Enter") {
+      enterHeld = false;
+    }
   });
 });
