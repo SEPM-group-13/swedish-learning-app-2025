@@ -545,11 +545,6 @@ body {
   background-image: repeating-linear-gradient(#fff, #fff 25px, #f4efe7 25px, #f4efe7 26px);
 }
 
-.al-level-card.is-locked {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
 .al-level-n {
   font: 600 25px/1 "Work Sans", sans-serif;
   color: var(--al-red);
@@ -572,10 +567,6 @@ body {
   margin-top: 5px;
   font: 500 12px "Work Sans", sans-serif;
   color: var(--al-ink);
-}
-
-.al-level-card.is-locked .al-level-score {
-  color: var(--al-red);
 }
 
 .al-level-card img {
