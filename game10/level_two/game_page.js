@@ -4,7 +4,7 @@
 
 import { getLang } from "../dev-tools/cookies.js";
 import { applyI18n } from "../dev-tools/i18n.js";
-import { whenReady, getBatch, pickN, vocabUrl, renderPips } from "../dev-tools/util.js";
+import { whenReady, getBatch, pickN, vocabUrl } from "../dev-tools/util.js";
 
 const PAIR_COUNT = 4;
 
@@ -20,10 +20,20 @@ function applyText() {
 
 function nodePoint(side, index) {
   const el = document.querySelector(`[data-${side}="${index}"] .al-node`);
+  if (!el) return { x: 0, y: 0 };
   const stage = document.getElementById("stage");
   const root = stage.getBoundingClientRect();
   const box = el.getBoundingClientRect();
   return { x: box.left + box.width / 2 - root.left, y: box.top + box.height / 2 - root.top };
+}
+
+function dropTargetAt(x, y) {
+  const stack = document.elementsFromPoint(x, y);
+  for (const el of stack) {
+    const target = el.closest?.("[data-right]");
+    if (target) return Number(target.dataset.right);
+  }
+  return null;
 }
 
 function drawPlayWires() {
@@ -45,7 +55,6 @@ function drawPlayWires() {
   document.querySelectorAll("[data-right]").forEach((el) => {
     el.classList.toggle("al-linked", links.some((l) => l.right === Number(el.dataset.right)));
   });
-  document.getElementById("link-count").textContent = `${links.length} / ${PAIR_COUNT}`;
   document.getElementById("submit").disabled = links.length !== PAIR_COUNT;
 }
 
@@ -56,7 +65,7 @@ function renderPlayBoard() {
     .map(
       (item, i) => `
       <div class="al-pair" data-left="${i}">
-        <img src="${vocabUrl(item.img)}" alt="${item.en || item.sv}">
+        <img draggable="false" src="${vocabUrl(item.img)}" alt="${item.en || item.sv}">
         <span style="font:500 13px 'Work Sans',sans-serif;color:#555">${item.en || ""}</span>
         <span class="al-node al-node-r"></span>
       </div>`
@@ -81,7 +90,6 @@ function startRound() {
   rightItems = pickN(leftItems, PAIR_COUNT);
   document.getElementById("round-label").textContent =
     lang === "sv" ? "Matcha paren" : "Match the pairs";
-  renderPips(document.getElementById("pips"), [], 0, PAIR_COUNT);
   renderPlayBoard();
 }
 
@@ -92,13 +100,16 @@ function pointerPos(e, stage) {
 
 function setupDrag() {
   const stage = document.getElementById("stage");
+  stage.addEventListener("dragstart", (e) => e.preventDefault());
   stage.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
     const card = e.target.closest("[data-left]");
     if (!card) return;
+    e.preventDefault();
     const left = Number(card.dataset.left);
     links = links.filter((l) => l.left !== left);
     const p = pointerPos(e, stage);
-    drag = { left, x: p.x, y: p.y };
+    drag = { left, x: p.x, y: p.y, hoverRight: null };
     stage.setPointerCapture(e.pointerId);
     drawPlayWires();
   });
@@ -107,13 +118,16 @@ function setupDrag() {
     const p = pointerPos(e, stage);
     drag.x = p.x;
     drag.y = p.y;
+    drag.hoverRight = dropTargetAt(e.clientX, e.clientY);
     drawPlayWires();
   });
   const endDrag = (e) => {
     if (!drag) return;
-    const drop = document.elementFromPoint(e.clientX, e.clientY)?.closest("[data-right]");
-    if (drop) {
-      const right = Number(drop.dataset.right);
+    if (stage.hasPointerCapture(e.pointerId)) {
+      stage.releasePointerCapture(e.pointerId);
+    }
+    const right = drag.hoverRight ?? dropTargetAt(e.clientX, e.clientY);
+    if (right != null) {
       links = links.filter((l) => l.left !== drag.left && l.right !== right);
       links.push({ left: drag.left, right });
     }
@@ -121,10 +135,14 @@ function setupDrag() {
     drawPlayWires();
   };
   stage.addEventListener("pointerup", endDrag);
-  stage.addEventListener("pointercancel", () => {
+  stage.addEventListener("pointercancel", (e) => {
+    if (stage.hasPointerCapture(e.pointerId)) {
+      stage.releasePointerCapture(e.pointerId);
+    }
     drag = null;
     drawPlayWires();
   });
+  window.addEventListener("resize", () => requestAnimationFrame(drawPlayWires));
 }
 
 function submitRound() {
