@@ -109,8 +109,18 @@ function renderPlay() {
   document.getElementById("answer").focus();
 }
 
+function preloadImages(items) {
+  items.forEach((word) => {
+    if (!word.img) return;
+
+    const image = new Image();
+    image.src = vocabUrl(word.img);
+  });
+}
+
 function startRound() {
   words = getBatch(TOTAL, "spelling");
+  preloadImages(words);
   qIndex = 0;
   results = [];
   renderPlay();
