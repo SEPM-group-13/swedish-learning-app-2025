@@ -28,7 +28,13 @@ const TEXT = {
       `You missed ${n} ${n === 1 ? "word" : "words"}. Review ${n === 1 ? "it" : "them"} now for another go, or end the round.`,
     reviewBtn: "Review mistakes",
     endBtn: "End round",
-    reviewLabel: (i, n) => `Review ${i} of ${n}`
+    reviewDoneTitle: "Review complete",
+    reviewAgainNote: (n) =>
+      `You still missed ${n} ${n === 1 ? "word" : "words"}. Review ${n === 1 ? "it" : "them"} again, or end the round.`,
+    reviewLabel: (i, n) => `Review ${i} of ${n}`, 
+    reviewGoodJob: "Good job reviewing all the words!",
+    reviewPartial: (ok, n) => `You got ${ok} of ${n} right in the review. Keep practising!`,
+
   },
   sv: {
     reviewTitle: "Första genomgången klar",
@@ -36,7 +42,12 @@ const TEXT = {
       `Du missade ${n} ord. Repetera ${n === 1 ? "det" : "dem"} nu för ett nytt försök, eller avsluta rundan.`,
     reviewBtn: "Repetera felen",
     endBtn: "Avsluta rundan",
-    reviewLabel: (i, n) => `Repetition ${i} av ${n}`
+    reviewDoneTitle: "Repetitionen klar",
+    reviewAgainNote: (n) =>
+      `Du missade fortfarande ${n} ord. Repetera ${n === 1 ? "det" : "dem"} igen, eller avsluta rundan.`,
+    reviewLabel: (i, n) => `Repetition ${i} av ${n}`, 
+    reviewGoodJob: "Bra jobbat med att repetera alla orden!",
+    reviewPartial: (ok, n) => `Du fick ${ok} av ${n} rätt i repetitionen. Fortsätt öva!`,
   }
 };
 
@@ -159,8 +170,9 @@ function startRound() {
 }
 
 function startReview() {
+  const prev = activeResults();
+  queue = queue.filter((_, i) => prev[i] === false);
   phase = "review";
-  queue = words.filter((_, i) => results[i] === false);
   reviewResults = [];
   qIndex = 0;
   renderPlay();
@@ -189,11 +201,6 @@ function submitAnswer() {
   updateHud();
 }
 
-// function acceptWrongAndNext() {
-//   if (results[qIndex] !== true) results[qIndex] = false;
-//   nextQuestion();
-// }
-
 function nextQuestion() {
   hidePopups();
   qIndex += 1;
@@ -201,41 +208,53 @@ function nextQuestion() {
     renderPlay();
     return;
   }
-  
-  if (phase === "main") {
-    const missed = results.filter((r) => r === false).length;
-    if (missed > 0) showReviewChoice(missed);
-    else finishRound();
-  } else {
-    finishRound();
-  }
+
+  const missed = activeResults().filter((r) => r === false).length;
+  if (missed > 0) showReviewChoice(missed);
+  else finishRound();
 }
 
 function showReviewChoice(missed) {
-  const roundScore = results.filter((r) => r === true).length;
-  document.getElementById("review-title").textContent = txt().reviewTitle;
-  document.getElementById("review-score").textContent = String(roundScore);
-  document.getElementById("review-note").textContent = txt().reviewNote(missed);
+  const res = activeResults();
+  const total = phase === "main" ? TOTAL : queue.length;
+  const score = res.filter((r) => r === true).length;
+  const isReview = phase === "review";
+
+  document.getElementById("review-title").textContent = isReview ? txt().reviewDoneTitle : txt().reviewTitle;
+  document.getElementById("review-score").textContent = String(score);
+  document.getElementById("review-max").textContent = `/ ${total}`;
+  document.getElementById("review-note").textContent = isReview ? txt().reviewAgainNote(missed) : txt().reviewNote(missed);
   document.getElementById("start-review").lastElementChild.textContent = txt().reviewBtn;
   document.getElementById("end-round").textContent = txt().endBtn;
-  renderPips(document.getElementById("pips-review"), results, -1, TOTAL);
+  renderPips(document.getElementById("pips-review"), res, -1, total);
   show("review");
 }
 
 function finishRound() {
   hidePopups();
-  const roundScore = results.filter((r) => r === true).length;
+
+  const firstScore = results.filter((r) => r === true).length;
   words.forEach((w, i) => changeWeight(w.id, "spelling", results[i] ? 1 : -1));
-  const { progress, total } = recordLevelScore(3, roundScore);
-  document.getElementById("done-score").textContent = String(roundScore);
-  renderPips(document.getElementById("pips-done"), results, -1, TOTAL);
-  document.getElementById("done-note").textContent = roundSummary(lang, {
-    round: roundScore,
-    max: TOTAL,
-    level: 3,
-    total,
-    finished: progress.game_completed
-  });
+  const { progress, total } = recordLevelScore(3, firstScore);
+
+  const res = activeResults();
+  const shownMax = phase === "main" ? TOTAL : queue.length;
+  const shownScore = res.filter((r) => r === true).length;
+
+  document.getElementById("done-score").textContent = String(shownScore);
+  document.getElementById("done-max").textContent = `/ ${shownMax}`;
+  renderPips(document.getElementById("pips-done"), res, -1, shownMax);
+  const isReview = phase === "review";
+  const reviewAllRight = isReview && shownScore === shownMax;
+  document.getElementById("done-note").textContent = isReview
+    ? (reviewAllRight ? txt().reviewGoodJob : txt().reviewPartial(shownScore, shownMax))
+    : roundSummary(lang, {
+        round: firstScore,
+        max: TOTAL,
+        level: 3,
+        total,
+        finished: progress.game_completed
+      });
   show("done");
 }
 
