@@ -97,12 +97,24 @@ Owned by Game 10
           </div>
           <button type="button" class="al-audio js-audio"><i class="fa-solid fa-volume-high"></i></button>
         </div>
-        <div style="display:flex;gap:10px;margin-top:16px">
-          <button type="button" class="al-btn al-btn-ghost" id="try-again" style="flex:1"><i class="fa-solid fa-rotate-left" style="margin-right:9px"></i><span data-i18n="tryAgain"></span></button>
-          <button type="button" class="al-btn al-btn-primary js-next" style="flex:1"><span data-i18n="next"></span><i class="fa-solid fa-arrow-right" style="margin-left:9px"></i></button>
+        <div style="margin-top:16px">
+          <button type="button" class="al-btn al-btn-primary js-next" style="width:100%"><span data-i18n="next"></span><i class="fa-solid fa-arrow-right" style="margin-left:9px"></i></button>
         </div>
       </div>
     </div>
+
+    <!-- Shown after the first pass if any words were missed -->
+    <section class="al-screen al-done" id="review">
+      <span class="al-kicker"><span data-i18n="levelWord"></span> 3</span>
+      <h1 id="review-title" style="margin:12px 0 0;font:600 36px/1.12 'Work Sans',sans-serif;color:#14100e"></h1>
+      <div class="al-big-score"><b id="review-score">0</b><span>/ 10</span></div>
+      <div class="al-pips" id="pips-review" style="width:420px;margin-top:16px"></div>
+      <p id="review-note" style="margin:16px 0 0;max-width:470px"></p>
+      <div class="al-done-actions">
+        <button type="button" class="al-btn al-btn-ghost" id="end-round"></button>
+        <button type="button" class="al-btn al-btn-primary" id="start-review"><i class="fa-solid fa-rotate-left" style="margin-right:9px"></i><span></span></button>
+      </div>
+    </section>
 
     <section class="al-screen al-done" id="done">
       <span class="al-kicker"><span data-i18n="levelWord"></span> 3</span>
