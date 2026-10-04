@@ -62,6 +62,12 @@ body {
   font-family: "Work Sans", sans-serif;
   cursor: pointer;
   border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-decoration: none;
+  line-height: 1.2;
 }
 
 .al-btn-ghost {
