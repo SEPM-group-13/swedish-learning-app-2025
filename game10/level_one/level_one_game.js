@@ -4,7 +4,7 @@
 
 import { getLang, recordLevelScore, changeWeight } from "../dev-tools/cookies.js";
 import { t, roundSummary } from "../dev-tools/i18n.js";
-import { whenReady, foodItems, getBatch, vocabUrl, playAudio, renderPips } from "../dev-tools/util.js";
+import { whenReady, foodItems, getBatch, vocabUrl, playAudio, renderPips, preloadImages } from "../dev-tools/util.js";
 
 const TOTAL = 10;
 const screens = {
@@ -60,6 +60,7 @@ function updateHud() {
 function makeQuestions() {
   const pool = foods.filter((item) => item.img) || foods;
   const batch = getBatch(TOTAL, "recognition");
+  preloadImages(batch);
   questions = [];
   for (let i = 0; i < batch.length; i++) {
     const isTrue = Math.random() > 0.5;

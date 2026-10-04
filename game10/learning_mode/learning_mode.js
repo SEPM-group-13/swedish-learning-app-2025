@@ -4,7 +4,7 @@
 
 import { getLang, changeWeight } from "../dev-tools/cookies.js";
 import { t } from "../dev-tools/i18n.js";
-import { whenReady, getBatch, vocabUrl, playAudio } from "../dev-tools/util.js";
+import { whenReady, getBatch, vocabUrl, playAudio, preloadImages } from "../dev-tools/util.js";
 
 const FRONT = document.getElementById("card-front");
 const BACK = document.getElementById("card-back");
@@ -74,6 +74,7 @@ function start() {
   lang = getLang();
   applyI18n();
   cards = getBatch(DECK_SIZE, "recognition");
+  preloadImages(cards);
   index = 0;
   known = [];
   if (!cards.length) return;

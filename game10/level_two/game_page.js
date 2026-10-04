@@ -4,7 +4,7 @@
 
 import { getLang } from "../dev-tools/cookies.js";
 import { applyI18n } from "../dev-tools/i18n.js";
-import { whenReady, getBatch, pickN, vocabUrl } from "../dev-tools/util.js";
+import { whenReady, getBatch, pickN, vocabUrl, preloadImages } from "../dev-tools/util.js";
 
 const PAIR_COUNT = 4;
 
@@ -87,6 +87,7 @@ function renderPlayBoard() {
 
 function startRound() {
   leftItems = getBatch(PAIR_COUNT, "recognition");
+  preloadImages(leftItems);
   rightItems = pickN(leftItems, PAIR_COUNT);
   document.getElementById("round-label").textContent =
     lang === "sv" ? "Matcha paren" : "Match the pairs";

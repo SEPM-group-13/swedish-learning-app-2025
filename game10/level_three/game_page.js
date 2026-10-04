@@ -8,10 +8,12 @@ import {
   whenReady,
   getBatch,
   vocabUrl,
+  preloadImages,
   playAudio,
   renderPips,
   normalizeAnswer
 } from "../dev-tools/util.js";
+
 
 const TOTAL = 10;
 const screens = {
@@ -206,6 +208,7 @@ function renderPlay() {
 
 function startRound() {
   words = getBatch(TOTAL, "spelling");
+  preloadImages(words);
   queue = [...words];
   phase = "main";
   qIndex = 0;
