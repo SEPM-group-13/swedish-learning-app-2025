@@ -238,11 +238,9 @@ function submitAnswer() {
     document.getElementById("ok-sv").textContent = word.sv;
     document.getElementById("popup-ok").classList.add("is-on");
   } else {
-    renderSpellingDiff(document.getElementById("typed"), lastTyped || "—", word.sv);
     res[qIndex] = false;
-    document.getElementById("typed").textContent = lastTyped || "—";
-    const closeness = getCloseness(lastTyped, word.sv);
-    document.getElementById("closeness-feedback").textContent = t(lang, closeness);
+    renderSpellingDiff(document.getElementById("typed"), lastTyped || "—", word.sv);
+    document.getElementById("closeness-feedback").textContent = t(lang, "spellingFeedback");
     document.getElementById("no-img").src = vocabUrl(word.img);
     document.getElementById("no-sv").innerHTML = `${word.sv} <span style="font-size:15px;font-weight:400;color:#555">— ${word.en || ""}</span>`;
     document.getElementById("popup-no").classList.add("is-on");
