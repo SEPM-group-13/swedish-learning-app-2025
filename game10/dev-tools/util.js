@@ -18,6 +18,15 @@ export function vocabUrl(rel) {
   return `${rootPath()}/${String(rel).replace(/^\//, "")}`;
 }
 
+export function preloadImages(items) {
+  items.forEach((item) => {
+    if (!item.img) return;
+
+    const image = new Image();
+    image.src = vocabUrl(item.img);
+  });
+}
+
 export function shuffle(list) {
   const copy = list.slice();
   for (let i = copy.length - 1; i > 0; i--) {

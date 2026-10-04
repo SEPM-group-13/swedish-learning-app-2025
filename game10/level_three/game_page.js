@@ -8,10 +8,12 @@ import {
   whenReady,
   getBatch,
   vocabUrl,
+  preloadImages,
   playAudio,
   renderPips,
   normalizeAnswer
 } from "../dev-tools/util.js";
+
 
 const TOTAL = 10;
 const screens = {
@@ -107,15 +109,6 @@ function renderPlay() {
   updateHud();
   show("play");
   document.getElementById("answer").focus();
-}
-
-function preloadImages(items) {
-  items.forEach((word) => {
-    if (!word.img) return;
-
-    const image = new Image();
-    image.src = vocabUrl(word.img);
-  });
 }
 
 function startRound() {
