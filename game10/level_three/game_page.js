@@ -19,14 +19,52 @@ const TOTAL = 10;
 const screens = {
   intro: document.getElementById("intro"),
   play: document.getElementById("play"),
+  review: document.getElementById("review"),
   done: document.getElementById("done")
+};
+
+const TEXT = {
+  en: {
+    reviewTitle: "First pass complete",
+    reviewNote: (n) =>
+      `You missed ${n} ${n === 1 ? "word" : "words"}. Review ${n === 1 ? "it" : "them"} now for another go, or end the round.`,
+    reviewBtn: "Review mistakes",
+    endBtn: "End round",
+    reviewDoneTitle: "Review complete",
+    reviewAgainNote: (n) =>
+      `You still missed ${n} ${n === 1 ? "word" : "words"}. Review ${n === 1 ? "it" : "them"} again, or end the round.`,
+    reviewLabel: (i, n) => `Review ${i} of ${n}`, 
+    reviewGoodJob: "Good job reviewing all the words!",
+    reviewPartial: (ok, n) => `You got ${ok} of ${n} right in the review. Keep practising!`,
+
+  },
+  sv: {
+    reviewTitle: "Första genomgången klar",
+    reviewNote: (n) =>
+      `Du missade ${n} ord. Repetera ${n === 1 ? "det" : "dem"} nu för ett nytt försök, eller avsluta rundan.`,
+    reviewBtn: "Repetera felen",
+    endBtn: "Avsluta rundan",
+    reviewDoneTitle: "Repetitionen klar",
+    reviewAgainNote: (n) =>
+      `Du missade fortfarande ${n} ord. Repetera ${n === 1 ? "det" : "dem"} igen, eller avsluta rundan.`,
+    reviewLabel: (i, n) => `Repetition ${i} av ${n}`, 
+    reviewGoodJob: "Bra jobbat med att repetera alla orden!",
+    reviewPartial: (ok, n) => `Du fick ${ok} av ${n} rätt i repetitionen. Fortsätt öva!`,
+  }
 };
 
 let lang = "en";
 let words = [];
+let queue = [];
+let phase = "main"; // "main" or "review"
 let qIndex = 0;
 let results = [];
+let reviewResults = [];
 let lastTyped = "";
+
+function txt() {
+  return TEXT[lang] || TEXT.en;
+}
 
 function applyI18n() {
   document.documentElement.lang = lang;
@@ -47,11 +85,18 @@ function hidePopups() {
 }
 
 function current() {
-  return words[qIndex];
+  return queue[qIndex];
 }
 
-// just a simple levenstein distance for the user to have an understanding on how close they got
-function levenshteinDistance(a, b) {
+function activeResults() {
+  return phase === "main" ? results : reviewResults;
+}
+
+// Use Levenshtein distance to make it clearer which spelling mistakes were made
+function getSpellingDiff(typed, target) {
+  const a = normalizeAnswer(typed);
+  const b = normalizeAnswer(target);
+
   const rows = a.length + 1;
   const cols = b.length + 1;
   const matrix = Array.from({ length: rows }, () => Array(cols).fill(0));
@@ -71,32 +116,82 @@ function levenshteinDistance(a, b) {
     }
   }
 
-  return matrix[a.length][b.length];
+  const diff = [];
+  let i = a.length;
+  let j = b.length;
+
+  while (i > 0 || j > 0) {
+    // Same character
+    if (
+      i > 0 &&
+      j > 0 &&
+      a[i - 1] === b[j - 1] &&
+      matrix[i][j] === matrix[i - 1][j - 1]
+    ) {
+      diff.push({ char: a[i - 1], error: false });
+      i -= 1;
+      j -= 1;
+    }
+    // Wrong character
+    else if (
+      i > 0 &&
+      j > 0 &&
+      matrix[i][j] === matrix[i - 1][j - 1] + 1
+    ) {
+      diff.push({ char: a[i - 1], error: true });
+      i -= 1;
+      j -= 1;
+    }
+    // Extra character typed
+    else if (
+      i > 0 &&
+      matrix[i][j] === matrix[i - 1][j] + 1
+    ) {
+      diff.push({ char: a[i - 1], error: true });
+      i -= 1;
+    }
+    // Missing character
+    else {
+      diff.push({ char: "_", error: true });
+      j -= 1;
+    }
+  }
+
+  return diff.reverse();
 }
 
-function getCloseness(typed, target) {
-  const normalizedTyped = normalizeAnswer(typed);
-  const normalizedTarget = normalizeAnswer(target);
+function renderSpellingDiff(element, typed, target) {
+  const diff = getSpellingDiff(typed, target);
 
-  if (!normalizedTyped || !normalizedTarget) return "notClose";
+  element.textContent = "";
 
-  const distance = levenshteinDistance(normalizedTyped, normalizedTarget);
-  const maxLength = Math.max(normalizedTyped.length, normalizedTarget.length);
-  const similarity = 1 - distance / maxLength;
+  diff.forEach(({ char, error }) => {
+    const span = document.createElement("span");
+    span.textContent = char;
 
-  if (distance === 1) return "veryClose";
-  if (distance === 2 && similarity >= 0.6) return "gettingClose";
+    if (error) {
+      span.classList.add("spelling-error");
+    }
 
-  return "notClose";
+    element.appendChild(span);
+  });
 }
 
 function updateHud() {
-  const ok = results.filter((r) => r === true).length;
-  const no = results.filter((r) => r === false).length;
-  const label = lang === "sv" ? `Fråga ${Math.min(qIndex + 1, TOTAL)} av ${TOTAL}` : `Question ${Math.min(qIndex + 1, TOTAL)} of ${TOTAL}`;
+  const res = activeResults();
+  const total = phase === "main" ? TOTAL : queue.length;
+  const ok = res.filter((r) => r === true).length;
+  const no = res.filter((r) => r === false).length;
+  const n = Math.min(qIndex + 1, total);
+  let label;
+  if (phase === "main") {
+    label = lang === "sv" ? `Fråga ${n} av ${total}` : `Question ${n} of ${total}`;
+  } else {
+    label = txt().reviewLabel(n, total);
+  }
   document.getElementById("q-label").textContent = label;
   document.getElementById("live-score").innerHTML = `<i class="fa-solid fa-check" style="color:#1f6b3a;margin-right:5px"></i>${ok}<span style="color:#cfc7bb;margin:0 8px">|</span><i class="fa-solid fa-xmark" style="color:#9d0000;margin-right:5px"></i>${no}`;
-  renderPips(document.getElementById("pips"), results, qIndex, TOTAL);
+  renderPips(document.getElementById("pips"), res, qIndex, total);
 }
 
 function renderPlay() {
@@ -114,22 +209,37 @@ function renderPlay() {
 function startRound() {
   words = getBatch(TOTAL, "spelling");
   preloadImages(words);
+  queue = [...words];
+  phase = "main";
   qIndex = 0;
   results = [];
+  reviewResults = [];
+  renderPlay();
+}
+
+function startReview() {
+  const prev = activeResults();
+  queue = queue.filter((_, i) => prev[i] === false);
+  phase = "review";
+  reviewResults = [];
+  qIndex = 0;
   renderPlay();
 }
 
 function submitAnswer() {
   if (document.querySelector(".al-popup.is-on")) return;
   const word = current();
+  const res = activeResults();
   lastTyped = document.getElementById("answer").value;
   const ok = normalizeAnswer(lastTyped) === normalizeAnswer(word.sv);
   if (ok) {
-    results[qIndex] = true;
+    res[qIndex] = true;
     document.getElementById("ok-img").src = vocabUrl(word.img);
     document.getElementById("ok-sv").textContent = word.sv;
     document.getElementById("popup-ok").classList.add("is-on");
   } else {
+    renderSpellingDiff(document.getElementById("typed"), lastTyped || "—", word.sv);
+    res[qIndex] = false;
     document.getElementById("typed").textContent = lastTyped || "—";
     const closeness = getCloseness(lastTyped, word.sv);
     document.getElementById("closeness-feedback").textContent = t(lang, closeness);
@@ -140,32 +250,60 @@ function submitAnswer() {
   updateHud();
 }
 
-function acceptWrongAndNext() {
-  if (results[qIndex] !== true) results[qIndex] = false;
-  nextQuestion();
-}
-
 function nextQuestion() {
   hidePopups();
   qIndex += 1;
-  if (qIndex >= words.length) finishRound();
-  else renderPlay();
+  if (qIndex < queue.length) {
+    renderPlay();
+    return;
+  }
+
+  const missed = activeResults().filter((r) => r === false).length;
+  if (missed > 0) showReviewChoice(missed);
+  else finishRound();
+}
+
+function showReviewChoice(missed) {
+  const res = activeResults();
+  const total = phase === "main" ? TOTAL : queue.length;
+  const score = res.filter((r) => r === true).length;
+  const isReview = phase === "review";
+
+  document.getElementById("review-title").textContent = isReview ? txt().reviewDoneTitle : txt().reviewTitle;
+  document.getElementById("review-score").textContent = String(score);
+  document.getElementById("review-max").textContent = `/ ${total}`;
+  document.getElementById("review-note").textContent = isReview ? txt().reviewAgainNote(missed) : txt().reviewNote(missed);
+  document.getElementById("start-review").lastElementChild.textContent = txt().reviewBtn;
+  document.getElementById("end-round").textContent = txt().endBtn;
+  renderPips(document.getElementById("pips-review"), res, -1, total);
+  show("review");
 }
 
 function finishRound() {
   hidePopups();
-  const roundScore = results.filter((r) => r === true).length;
+
+  const firstScore = results.filter((r) => r === true).length;
   words.forEach((w, i) => changeWeight(w.id, "spelling", results[i] ? 1 : -1));
-  const { progress, total } = recordLevelScore(3, roundScore);
-  document.getElementById("done-score").textContent = String(roundScore);
-  renderPips(document.getElementById("pips-done"), results, -1, TOTAL);
-  document.getElementById("done-note").textContent = roundSummary(lang, {
-    round: roundScore,
-    max: TOTAL,
-    level: 3,
-    total,
-    finished: progress.game_completed
-  });
+  const { progress, total } = recordLevelScore(3, firstScore);
+
+  const res = activeResults();
+  const shownMax = phase === "main" ? TOTAL : queue.length;
+  const shownScore = res.filter((r) => r === true).length;
+
+  document.getElementById("done-score").textContent = String(shownScore);
+  document.getElementById("done-max").textContent = `/ ${shownMax}`;
+  renderPips(document.getElementById("pips-done"), res, -1, shownMax);
+  const isReview = phase === "review";
+  const reviewAllRight = isReview && shownScore === shownMax;
+  document.getElementById("done-note").textContent = isReview
+    ? (reviewAllRight ? txt().reviewGoodJob : txt().reviewPartial(shownScore, shownMax))
+    : roundSummary(lang, {
+        round: firstScore,
+        max: TOTAL,
+        level: 3,
+        total,
+        finished: progress.game_completed
+      });
   show("done");
 }
 
@@ -197,12 +335,9 @@ whenReady(() => {
   document.querySelectorAll(".js-audio").forEach((btn) => {
     btn.addEventListener("click", () => playAudio(current()?.audio));
   });
-  document.querySelectorAll("#popup-ok .js-next").forEach((btn) => btn.addEventListener("click", nextQuestion));
-  document.querySelectorAll("#popup-no .js-next").forEach((btn) => btn.addEventListener("click", acceptWrongAndNext));
-  document.getElementById("try-again").addEventListener("click", () => {
-    hidePopups();
-    document.getElementById("answer").focus();
-  });
+  document.querySelectorAll(".al-popup .js-next").forEach((btn) => btn.addEventListener("click", nextQuestion));
+  document.getElementById("start-review").addEventListener("click", startReview);
+  document.getElementById("end-round").addEventListener("click", finishRound);
   document.getElementById("again").addEventListener("click", () => show("intro"));
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Enter") return;

@@ -62,6 +62,12 @@ body {
   font-family: "Work Sans", sans-serif;
   cursor: pointer;
   border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-decoration: none;
+  line-height: 1.2;
 }
 
 .al-btn-ghost {
@@ -1242,4 +1248,11 @@ body {
   margin-top: 24px;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+.spelling-error {
+  color: var(--al-red);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
 }
