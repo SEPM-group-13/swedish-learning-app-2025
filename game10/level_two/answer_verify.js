@@ -44,13 +44,7 @@ function render() {
       const matched = graded.find((g) => g.right === index);
       const ok = matched?.correct;
       const note = matched
-        ? ok
-          ? lang === "sv"
-            ? `${item.en || ""} — din linje var rätt`
-            : `${item.en || ""} — your line was right`
-          : lang === "sv"
-            ? `du kopplade den till ${matched.leftItem.sv}`
-            : `you linked this to ${matched.leftItem.en || matched.leftItem.sv}`
+        ? `${item.en || ""} — ${t(lang, ok ? "lineWasRight" : "lineWasWrong")}`
         : "";
       return `<div class="al-result-word ${ok ? "al-result-ok" : "al-result-no"}">
         <i class="fa-solid ${ok ? "fa-check" : "fa-xmark"}" style="color:${ok ? "#1f6b3a" : "#9d0000"}"></i>
