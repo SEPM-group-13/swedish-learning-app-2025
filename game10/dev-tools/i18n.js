@@ -15,7 +15,7 @@ export const STR = {
     noScore: "No score, no timer",
     learningDesc: "Flip cards, hear the word, keep the ones you know.",
     openCards: "Open the cards",
-    best: "Total",
+    // best: "Total",
     notYet: "Not played yet",
     gameWon: "game finished",
     youFinished: "You finished the game.",
@@ -87,9 +87,11 @@ export const STR = {
     wordMany: "words",
     themOne: "it",
     themMany: "them",
-    locked: "This level is locked. Score a total of 10 points on Level {n} first.",
+    // locked: "This level is locked. Score a total of 10 points on Level {n} first.",
     loading: "Loading…",
-    equals: "means"
+    equals: "means",
+    streak: "Streak",
+    best: "Best Streak"
   },
   sv: {
     tagline: "Svenska matord — i din egen takt",
@@ -103,7 +105,7 @@ export const STR = {
     noScore: "Inga poäng, ingen tidtagning",
     learningDesc: "Vänd korten, lyssna på uttalet och behåll orden du redan kan.",
     openCards: "Öppna ordkorten",
-    best: "Totalt",
+    // best: "Totalt",
     notYet: "Inte spelad ännu",
     gameWon: "spelet är klart",
     youFinished: "Du har klarat spelet.",
@@ -175,9 +177,11 @@ export const STR = {
     wordMany: "ord",
     themOne: "det",
     themMany: "dem",
-    locked: "Den här nivån är låst. Få totalt 10 poäng på nivå {n} först.",
+    // locked: "Den här nivån är låst. Få totalt 10 poäng på nivå {n} först.",
     loading: "Laddar…",
-    equals: "betyder"
+    equals: "betyder",
+    streak: "Svit",
+    best: "Bästa Stvit"
   }
 };
 

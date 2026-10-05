@@ -569,7 +569,8 @@ body {
   color: var(--al-body);
 }
 
-.al-level-score {
+
+.al-level-streak {
   margin-top: 5px;
   font: 500 12px "Work Sans", sans-serif;
   color: var(--al-ink);

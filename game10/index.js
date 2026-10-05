@@ -2,7 +2,7 @@
 // Owned by Game 10
 // ==============================================
 
-import { getLang, setLang, loadProgress, resetProgress, getWeight, SCORE_TO_PASS, PLATEAU } from "./dev-tools/cookies.js";
+import { getLang, setLang, loadProgress, resetProgress, getWeight, getStreak, PLATEAU } from "./dev-tools/cookies.js";
 import { t, applyI18n as fillText } from "./dev-tools/i18n.js";
 import { whenReady, foodItems, vocabUrl } from "./dev-tools/util.js";
 
@@ -30,15 +30,12 @@ function renderMenu() {
   document.getElementById("learned-count").textContent = String(learned);
   document.getElementById("learned-total").textContent = String(foods.length);
   document.getElementById("learned-bar").style.width = Math.min(100, (learned / total) * 100) + "%";
-
-    document.querySelectorAll("[data-score]").forEach((el) => {
+  document.querySelectorAll("[data-score]").forEach((el) => {
     const level = Number(el.dataset.score);
-    const score = Math.min(progress.levelScores[level] || 0, SCORE_TO_PASS);
-    if (score >= SCORE_TO_PASS) {
-      el.innerHTML = `<i class="fa-solid fa-check" style="color:#1f6b3a;font-size:10px;margin-right:5px"></i>${t(lang, "best")} ${score}/${SCORE_TO_PASS}`;
-    } else {
-      el.innerHTML = `<i class="fa-solid fa-star" style="color:#9d0000;font-size:10px;margin-right:5px"></i>${t(lang, "best")} ${score}/${SCORE_TO_PASS}`;
-    }
+    const streak = getStreak(level);
+    const levelcurrentStreak = streak.current;
+    const levelbestStreak = streak.best;
+    el.innerHTML = `${t(lang, "streak")} ${levelcurrentStreak} | ${t(lang, "best")} ${levelbestStreak}`;
   });
 }
 

@@ -35,7 +35,9 @@ function defaults() {
     currentLevel: 1,
     levelScores: { 1: 0, 2: 0, 3: 0 },
     learnedIds: [],
-    weights: {}
+    weights: {},
+    currentStreak: { 1: 0, 2: 0, 3: 0 },
+    bestStreak: { 1: 0, 2: 0, 3: 0 }
   };
 }
 
@@ -54,7 +56,13 @@ export function loadProgress() {
       ...data,
       levelScores: { ...base.levelScores, ...(data.levelScores || {}) },
       learnedIds: Array.isArray(data.learnedIds) ? data.learnedIds : [],
-      weights: data.weights && typeof data.weights === "object" ? data.weights : {}
+      weights: data.weights && typeof data.weights === "object" ? data.weights : {},
+      currentStreak: typeof data.currentStreak === "object" && data.currentStreak !== null
+        ? { ...base.currentStreak, ...data.currentStreak }
+        : base.currentStreak,
+      bestStreak: typeof data.bestStreak === "object" && data.bestStreak !== null
+        ? { ...base.bestStreak, ...data.bestStreak }
+        : base.bestStreak
     };
   } catch {
     return defaults();
@@ -92,25 +100,33 @@ export function changeWeight(id, mode, delta) {
   saveProgress(progress);
 }
 
+export function getStreak(level) {
+  const progress = loadProgress();
+  return {
+    current: progress.currentStreak[level] || 0,
+    best: progress.bestStreak[level] || 0
+  };
+}
+
+export function recordStreak(level, current, best) {
+  const progress = loadProgress();
+  progress.currentStreak[level] = current;
+  progress.bestStreak[level] = best;
+  saveProgress(progress);
+}
+
 export function recordLevelScore(level, roundScore) {
   const progress = loadProgress();
-  progress.levelScores[level] = (progress.levelScores[level] || 0) + roundScore;
+  const currentBest = progress.levelScores[level] || 0;
+  progress.levelScores[level] = Math.max(currentBest, roundScore);
   const total = progress.levelScores[level];
-  let unlockedNext = false;
-
-  if (total >= SCORE_TO_PASS && progress.currentLevel === level) {
-    if (level < 3) {
-      progress.currentLevel = level + 1;
-      unlockedNext = true;
-    }
-    const completion = level === 1 ? 33 : level === 2 ? 67 : 100;
-    window.save?.stats?.setCompletion("game10", completion);
-    if (level === 3 && !progress.game_completed) {
-      progress.game_completed = true;
-      window.save?.stats?.incrementWin("game10");
-    }
+  const completion = level === 1 ? 33 : level === 2 ? 67 : 100;
+  window.save?.stats?.setCompletion("game10", completion);
+  if (level === 3 && !progress.game_completed) {
+    progress.game_completed = true;
+    window.save?.stats?.incrementWin("game10");
   }
 
   saveProgress(progress);
-  return { progress, total, unlockedNext };
+  return { progress, total };
 }
