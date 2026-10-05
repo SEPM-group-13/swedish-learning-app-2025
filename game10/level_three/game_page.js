@@ -61,6 +61,7 @@ let qIndex = 0;
 let results = [];
 let reviewResults = [];
 let lastTyped = "";
+let enterHeld = false;
 
 function txt() {
   return TEXT[lang] || TEXT.en;
@@ -247,7 +248,6 @@ function submitAnswer() {
   }
   updateHud();
 }
-
 function nextQuestion() {
   hidePopups();
   qIndex += 1;
@@ -339,6 +339,26 @@ whenReady(() => {
   document.getElementById("again").addEventListener("click", () => show("intro"));
   document.addEventListener("keydown", (e) => {
     if (e.key !== "Enter") return;
-    if (document.getElementById("popup-ok").classList.contains("is-on")) nextQuestion();
+
+    if (enterHeld) {
+      e.preventDefault();
+      return;
+    }
+
+    enterHeld = true;
+
+    if (document.getElementById("popup-ok").classList.contains("is-on")) {
+      e.preventDefault();
+      nextQuestion();
+    } else if (document.getElementById("popup-no").classList.contains("is-on")) {
+      e.preventDefault();
+      nextQuestion();
+    }
+
+  });
+  document.addEventListener("keyup", (e) => {
+    if (e.key === "Enter") {
+      enterHeld = false;
+    }
   });
 });
