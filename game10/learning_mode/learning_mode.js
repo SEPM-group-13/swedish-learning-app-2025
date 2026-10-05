@@ -55,18 +55,18 @@ function renderCard() {
 }
 
 function nextUnknown() {
-  if (known.length >= cards.length) return finish();
-  let next = index;
-  do {
-    next = (next + 1) % cards.length;
-  } while (known.includes(next));
-  index = next;
+  const unknown = [];
+  for (let i = 0; i < cards.length; i++) {
+    if (!known.includes(i)) unknown.push(i);
+  }
+  if (!unknown.length) return finish();
+  const pos = unknown.indexOf(index);
+  index = unknown[pos === -1 ? 0 : (pos + 1) % unknown.length];
   renderCard();
   show(FRONT);
 }
 
 function finish() {
-  document.getElementById("done-score").textContent = String(cards.length);
   show(DONE);
 }
 
@@ -101,12 +101,17 @@ whenReady(() => {
     e.stopPropagation();
     playAudio(cards[index]?.audio);
   });
-  document.getElementById("repeat").addEventListener("click", () => {
+  document.getElementById("repeat").addEventListener("click", (e) => {
+    e.stopPropagation();
     nextUnknown();
   });
-  document.getElementById("got-it").addEventListener("click", () => {
-    known.push(index);
-    changeWeight(cards[index].id, "recognition", 1);
+  document.getElementById("got-it").addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!known.includes(index)) {
+      known.push(index);
+      const id = cards[index]?.id;
+      if (id) changeWeight(id, "recognition", 1);
+    }
     nextUnknown();
   });
   document.getElementById("again").addEventListener("click", start);

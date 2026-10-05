@@ -27,11 +27,11 @@ function nodePoint(side, index) {
   return { x: box.left + box.width / 2 - root.left, y: box.top + box.height / 2 - root.top };
 }
 
-function dropTargetAt(x, y) {
+function dropTargetAt(x, y, attr) {
   const stack = document.elementsFromPoint(x, y);
   for (const el of stack) {
-    const target = el.closest?.("[data-right]");
-    if (target) return Number(target.dataset.right);
+    const target = el.closest?.(`[data-${attr}]`);
+    if (target) return Number(target.dataset[attr]);
   }
   return null;
 }
@@ -45,7 +45,7 @@ function drawPlayWires() {
     html += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#9d0000" stroke-width="3" stroke-linecap="round"></line>`;
   });
   if (drag) {
-    const a = nodePoint("left", drag.left);
+    const a = nodePoint(drag.from, drag.index);
     html += `<line x1="${a.x}" y1="${a.y}" x2="${drag.x}" y2="${drag.y}" stroke="#9d0000" stroke-width="3" stroke-dasharray="7 6" stroke-linecap="round"></line>`;
   }
   svg.innerHTML = html;
@@ -104,13 +104,15 @@ function setupDrag() {
   stage.addEventListener("dragstart", (e) => e.preventDefault());
   stage.addEventListener("pointerdown", (e) => {
     if (e.button !== 0) return;
-    const card = e.target.closest("[data-left]");
-    if (!card) return;
+    const leftCard = e.target.closest("[data-left]");
+    const rightCard = e.target.closest("[data-right]");
+    if (!leftCard && !rightCard) return;
     e.preventDefault();
-    const left = Number(card.dataset.left);
-    links = links.filter((l) => l.left !== left);
+    const from = leftCard ? "left" : "right";
+    const index = Number((leftCard || rightCard).dataset[from]);
+    links = links.filter((l) => l[from] !== index);
     const p = pointerPos(e, stage);
-    drag = { left, x: p.x, y: p.y, hoverRight: null };
+    drag = { from, index, x: p.x, y: p.y, hover: null };
     stage.setPointerCapture(e.pointerId);
     drawPlayWires();
   });
@@ -119,7 +121,8 @@ function setupDrag() {
     const p = pointerPos(e, stage);
     drag.x = p.x;
     drag.y = p.y;
-    drag.hoverRight = dropTargetAt(e.clientX, e.clientY);
+    const dropSide = drag.from === "left" ? "right" : "left";
+    drag.hover = dropTargetAt(e.clientX, e.clientY, dropSide);
     drawPlayWires();
   });
   const endDrag = (e) => {
@@ -127,10 +130,13 @@ function setupDrag() {
     if (stage.hasPointerCapture(e.pointerId)) {
       stage.releasePointerCapture(e.pointerId);
     }
-    const right = drag.hoverRight ?? dropTargetAt(e.clientX, e.clientY);
-    if (right != null) {
-      links = links.filter((l) => l.left !== drag.left && l.right !== right);
-      links.push({ left: drag.left, right });
+    const dropSide = drag.from === "left" ? "right" : "left";
+    const hover = drag.hover ?? dropTargetAt(e.clientX, e.clientY, dropSide);
+    if (hover != null) {
+      const left = drag.from === "left" ? drag.index : hover;
+      const right = drag.from === "right" ? drag.index : hover;
+      links = links.filter((l) => l.left !== left && l.right !== right);
+      links.push({ left, right });
     }
     drag = null;
     drawPlayWires();

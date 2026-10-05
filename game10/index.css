@@ -778,6 +778,9 @@ body {
   padding: 0 40px 24px;
   display: flex;
   gap: 16px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .al-fb-ok {
@@ -945,7 +948,7 @@ body {
   align-items: center;
   padding: 8px 16px;
   position: relative;
-  cursor: pointer;
+  cursor: grab;
   box-sizing: border-box;
   font: 600 21px "Work Sans", sans-serif;
   color: var(--al-ink);
@@ -1106,6 +1109,8 @@ body {
 /* Flashcards */
 .al-cards {
   padding: 20px 30px 26px;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .al-cards-top {
@@ -1127,6 +1132,7 @@ body {
   cursor: pointer;
   position: relative;
   min-height: 0;
+  overflow: hidden;
 }
 
 .al-flip:hover {
@@ -1174,6 +1180,8 @@ body {
   font: 600 54px/1.05 "Work Sans", sans-serif;
   color: var(--al-ink);
   margin-top: 6px;
+  overflow-wrap: anywhere;
+  max-width: 100%;
 }
 
 .al-listen {
