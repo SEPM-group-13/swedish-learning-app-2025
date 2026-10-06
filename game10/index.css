@@ -584,12 +584,61 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 12px;
+  gap: 24px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--al-rule);
 }
 
-.al-menu-foot span {
-  font: 500 12.5px "Work Sans", sans-serif;
+.al-proverb {
+  position: relative;
+  min-width: 0;
+  font: 400 12.5px/1.5 "Work Sans", sans-serif;
+  cursor: help;
+}
+
+.al-proverb-kicker {
+  font: 600 10px "Work Sans", sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--al-red);
+  margin-right: 10px;
+}
+
+.al-proverb-sv {
+  font: 600 14.5px "Work Sans", sans-serif;
   color: var(--al-ink);
+  text-decoration: underline dotted var(--al-rule);
+  text-underline-offset: 4px;
+}
+
+.al-proverb-en {
+  font-style: italic;
+  color: var(--al-muted);
+  margin-left: 8px;
+}
+
+.al-proverb-tip {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 10px);
+  width: max-content;
+  max-width: 420px;
+  padding: 8px 12px;
+  background: var(--al-ink);
+  color: #fff;
+  border-radius: 6px;
+  font: 400 12.5px/1.4 "Work Sans", sans-serif;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s, transform 0.15s;
+  pointer-events: none;
+}
+
+.al-proverb:hover .al-proverb-tip,
+.al-proverb:focus-visible .al-proverb-tip {
+  opacity: 1;
+  transform: none;
 }
 
 .al-link {

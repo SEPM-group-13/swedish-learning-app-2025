@@ -2,8 +2,9 @@
 // Owned by Game 10
 // ==============================================
 
-import { getLang, setLang, loadProgress, resetProgress, getWeight, getStreak, PLATEAU } from "./dev-tools/cookies.js";
-import { t, applyI18n as fillText } from "./dev-tools/i18n.js";
+import { getLang, loadProgress, resetProgress, getWeight, getStreak, PLATEAU } from "./dev-tools/cookies.js";
+import { t, applyI18n } from "./dev-tools/i18n.js";
+import { proverbOfTheDay } from "./dev-tools/proverbs.js";
 import { whenReady, foodItems, vocabUrl } from "./dev-tools/util.js";
 
 const LEVEL_HREF = {
@@ -12,18 +13,16 @@ const LEVEL_HREF = {
   3: "level_three/level_three.html"
 };
 
-function applyI18n(lang) {
-  fillText(lang);
-  document.querySelectorAll("[data-lang]").forEach((btn) => {
-    btn.classList.toggle("is-on", btn.dataset.lang === lang);
-  });
-}
-
 function renderMenu() {
   const lang = getLang();
   const progress = loadProgress();
   const foods = foodItems();
   applyI18n(lang);
+
+  const proverb = proverbOfTheDay();
+  document.getElementById("proverb-sv").textContent = proverb.sv;
+  document.getElementById("proverb-en").textContent = `“${proverb.en}”`;
+  document.getElementById("proverb-meaning").textContent = proverb.meaning[lang];
 
   const learned = progress.learnedIds.length;
   const total = Math.max(foods.length, 1);
@@ -77,13 +76,6 @@ function renderWords() {
 
 whenReady(() => {
   renderMenu();
-
-  document.querySelectorAll("[data-lang]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      setLang(btn.dataset.lang);
-      renderMenu();
-    });
-  });
 
   document.getElementById("open-learn").addEventListener("click", () => {
     window.location.href = "learning_mode/learning_mode.html";
