@@ -2,11 +2,17 @@
 // Owned by Game 10
 // ==============================================
 
-import { getLang, recordLevelScore, changeWeight } from "../dev-tools/cookies.js";
+import { getLang, recordLevelScore, changeWeight, getStreak, recordStreak } from "../dev-tools/cookies.js";
 import { t, roundSummary } from "../dev-tools/i18n.js";
 import { whenReady, foodItems, getBatch, vocabUrl, playAudio, renderPips, preloadImages } from "../dev-tools/util.js";
 
 const TOTAL = 10;
+const LEVEL_ID = 1;
+const initialStreak = getStreak(LEVEL_ID);
+
+let currentStreak = initialStreak.current;
+let bestStreak = initialStreak.best;
+
 const screens = {
   play: document.getElementById("play"),
   correct: document.getElementById("correct"),
@@ -65,7 +71,13 @@ function updateHud() {
         ? `Fråga ${n} av ${total}`
         : `Question ${n} of ${total}`
       : t(lang, "reviewLabel", { i: n, n: total });
-  const scoreHtml = `<i class="fa-solid fa-check" style="color:#1f6b3a;margin-right:5px"></i>${ok}<span style="color:#cfc7bb;margin:0 8px">|</span><i class="fa-solid fa-xmark" style="color:#9d0000;margin-right:5px"></i>${no}`;
+  const scoreHtml = `
+    <i class="fa-solid fa-check" style="color:#1f6b3a;margin-right:3px"></i>${ok}
+    <span style="color:#cfc7bb;margin:0 6px">|</span>
+    <i class="fa-solid fa-xmark" style="color:#9d0000;margin-right:3px"></i>${no}
+    <span style="color:#cfc7bb;margin:0 6px">|</span>
+    <i class="fa-solid fa-fire" style="color:#ff6b00;margin-right:3px"></i>${currentStreak}
+  `.trim();
   ["q-label", "q-label-ok", "q-label-no"].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.textContent = label;
@@ -113,20 +125,26 @@ function renderPlay() {
 function answer(userTrue) {
   const correct = userTrue === current.isTrue;
   activeResults()[qIndex] = correct;
-  updateHud();
   const src = vocabUrl(current.shown.img);
   if (correct) {
+    currentStreak += 1;
+    if (currentStreak >= bestStreak) {
+      bestStreak = currentStreak;
+    }
     document.getElementById("ok-img").src = src;
     document.getElementById("ok-word").textContent = current.shown.sv;
     document.getElementById("ok-meaning").innerHTML = `<strong>${current.shown.sv}</strong> = ${current.shown.en || ""}`;
     show("correct");
   } else {
+    currentStreak = 0;
     document.getElementById("no-img").src = src;
     document.getElementById("no-sv").textContent = current.shown.sv;
     document.getElementById("no-en").textContent = current.shown.en || "";
     document.getElementById("no-saw").innerHTML = `<i class="fa-solid fa-xmark" style="color:#9d0000"></i><span>${t(lang, "youSaw")} <strong style="color:#14100e">${current.word.sv}</strong></span>`;
     show("wrong");
   }
+  recordStreak(LEVEL_ID, currentStreak, bestStreak);
+  updateHud();
 }
 
 function showReviewChoice(missed) {
@@ -165,9 +183,8 @@ function finishRound() {
     : roundSummary(lang, {
         round: firstScore,
         max: TOTAL,
-        level: 1,
-        total,
-        unlockedNext: false
+        level: LEVEL_ID,
+        total
       });
   show("done");
 }

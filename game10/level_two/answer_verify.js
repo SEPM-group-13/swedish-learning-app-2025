@@ -2,11 +2,17 @@
 // Owned by Game 10
 // ==============================================
 
-import { getLang, recordLevelScore, changeWeight } from "../dev-tools/cookies.js";
+import { getLang, recordLevelScore, changeWeight, getStreak, recordStreak } from "../dev-tools/cookies.js";
 import { t, applyI18n, roundSummary } from "../dev-tools/i18n.js";
 import { vocabUrl } from "../dev-tools/util.js";
 
 const PAIR_COUNT = 4;
+const LEVEL_ID = 2;
+const initialStreak = getStreak(LEVEL_ID);
+
+let currentStreak = initialStreak.current;
+let bestStreak = initialStreak.best;
+
 const state = JSON.parse(sessionStorage.getItem("eatLearnL2") || "null");
 const lang = getLang();
 
@@ -27,7 +33,16 @@ function render() {
     const right = rightItems[link.right];
     return { ...link, correct: left.id === right.id, leftItem: left, rightItem: right };
   });
+  
   const roundScore = graded.filter((g) => g.correct).length;
+  if (roundScore === PAIR_COUNT) {
+    currentStreak += roundScore;
+  } else {
+    currentStreak = roundScore;
+  }
+  if (currentStreak > bestStreak) bestStreak = currentStreak;
+  recordStreak(LEVEL_ID, currentStreak, bestStreak);
+  
   document.getElementById("res-ok").innerHTML = `<i class="fa-solid fa-check"></i>${roundScore} ${t(lang, "rightWord")}`;
   document.getElementById("res-no").innerHTML = `<i class="fa-solid fa-xmark"></i>${PAIR_COUNT - roundScore} ${t(lang, "wrongWord")}`;
   document.getElementById("res-left").innerHTML = leftItems
@@ -77,15 +92,15 @@ function render() {
 
   document.getElementById("continue").addEventListener("click", () => {
     graded.forEach((g) => changeWeight(g.leftItem.id, "recognition", g.correct ? 1 : -1));
-    const { total } = recordLevelScore(2, roundScore);
+    const { total } = recordLevelScore(LEVEL_ID, roundScore);
+
     document.getElementById("done-score").textContent = String(roundScore);
     document.getElementById("next-level").style.display = "flex";
     document.getElementById("done-note").textContent = roundSummary(lang, {
       round: roundScore,
       max: PAIR_COUNT,
-      level: 2,
-      total,
-      unlockedNext: false
+      level: LEVEL_ID,
+      total
     });
     show("done");
   });

@@ -2,7 +2,7 @@
 // Owned by Game 10
 // ==============================================
 
-import { getLang, recordLevelScore, changeWeight } from "../dev-tools/cookies.js";
+import { getLang, recordLevelScore, changeWeight, getStreak, recordStreak  } from "../dev-tools/cookies.js";
 import { t, applyI18n as fillText, roundSummary } from "../dev-tools/i18n.js";
 import {
   whenReady,
@@ -16,6 +16,12 @@ import {
 
 
 const TOTAL = 10;
+const LEVEL_ID = 3;
+const initialStreak = getStreak(LEVEL_ID);
+
+let currentStreak = initialStreak.current;
+let bestStreak = initialStreak.best;
+
 const screens = {
   intro: document.getElementById("intro"),
   play: document.getElementById("play"),
@@ -190,8 +196,21 @@ function updateHud() {
   } else {
     label = txt().reviewLabel(n, total);
   }
-  document.getElementById("q-label").textContent = label;
-  document.getElementById("live-score").innerHTML = `<i class="fa-solid fa-check" style="color:#1f6b3a;margin-right:5px"></i>${ok}<span style="color:#cfc7bb;margin:0 8px">|</span><i class="fa-solid fa-xmark" style="color:#9d0000;margin-right:5px"></i>${no}`;
+  const scoreHtml = `
+    <i class="fa-solid fa-check" style="color:#1f6b3a;margin-right:3px"></i>${ok}
+    <span style="color:#cfc7bb;margin:0 6px">|</span>
+    <i class="fa-solid fa-xmark" style="color:#9d0000;margin-right:3px"></i>${no}
+    <span style="color:#cfc7bb;margin:0 6px">|</span>
+    <i class="fa-solid fa-fire" style="color:#ff6b00;margin-right:3px"></i>${currentStreak}
+  `.trim();
+  ["q-label", "q-label-ok", "q-label-no"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = label;
+  });
+  ["live-score", "live-score-ok", "live-score-no"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = scoreHtml;
+  });
   renderPips(document.getElementById("pips"), res, qIndex, total);
 }
 
@@ -235,19 +254,26 @@ function submitAnswer() {
   const ok = normalizeAnswer(lastTyped) === normalizeAnswer(word.sv);
   if (ok) {
     res[qIndex] = true;
+    currentStreak += 1;
+    if (currentStreak >= bestStreak) {
+      bestStreak = currentStreak;
+    }
     document.getElementById("ok-img").src = vocabUrl(word.img);
     document.getElementById("ok-sv").textContent = word.sv;
     document.getElementById("popup-ok").classList.add("is-on");
   } else {
     res[qIndex] = false;
+    currentStreak = 0;
     renderSpellingDiff(document.getElementById("typed"), lastTyped || "—", word.sv);
     document.getElementById("closeness-feedback").textContent = t(lang, "spellingFeedback");
     document.getElementById("no-img").src = vocabUrl(word.img);
     document.getElementById("no-sv").innerHTML = `${word.sv} <span style="font-size:15px;font-weight:400;color:#555">— ${word.en || ""}</span>`;
     document.getElementById("popup-no").classList.add("is-on");
   }
+  recordStreak(LEVEL_ID, currentStreak, bestStreak);
   updateHud();
 }
+
 function nextQuestion() {
   hidePopups();
   qIndex += 1;
@@ -282,7 +308,7 @@ function finishRound() {
 
   const firstScore = results.filter((r) => r === true).length;
   words.forEach((w, i) => changeWeight(w.id, "spelling", results[i] ? 1 : -1));
-  const { progress, total } = recordLevelScore(3, firstScore);
+  const { progress, total } = recordLevelScore(LEVEL_ID, firstScore);
 
   const res = activeResults();
   const shownMax = phase === "main" ? TOTAL : queue.length;
@@ -298,7 +324,7 @@ function finishRound() {
     : roundSummary(lang, {
         round: firstScore,
         max: TOTAL,
-        level: 3,
+        level: LEVEL_ID,
         total,
         finished: progress.game_completed
       });
