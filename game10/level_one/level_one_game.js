@@ -8,6 +8,11 @@ import { whenReady, foodItems, getBatch, vocabUrl, playAudio, renderPips, preloa
 
 const TOTAL = 10;
 const LEVEL_ID = 1;
+const initialStreak = getStreak(LEVEL_ID);
+
+let currentStreak = initialStreak.current;
+let bestStreak = initialStreak.best;
+
 const screens = {
   play: document.getElementById("play"),
   correct: document.getElementById("correct"),
@@ -25,10 +30,6 @@ let reviewResults = [];
 let questions = [];
 let queue = [];
 let current = null;
-
-const initialStreak = getStreak(LEVEL_ID);
-let currentStreak = initialStreak.current;
-let bestStreak = initialStreak.best;
 
 function applyI18n() {
   document.documentElement.lang = lang;
@@ -124,7 +125,6 @@ function renderPlay() {
 function answer(userTrue) {
   const correct = userTrue === current.isTrue;
   activeResults()[qIndex] = correct;
-  
   const src = vocabUrl(current.shown.img);
   if (correct) {
     currentStreak += 1;

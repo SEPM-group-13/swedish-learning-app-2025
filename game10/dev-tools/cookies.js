@@ -108,12 +108,31 @@ export function getStreak(level) {
   };
 }
 
+
 export function recordStreak(level, current, best) {
   const progress = loadProgress();
   progress.currentStreak[level] = current;
   progress.bestStreak[level] = best;
   saveProgress(progress);
 }
+
+// export function recordStreak(level, current, best) {
+//   const progress = loadProgress();
+//   const lvl = String(level);
+
+//   // Ensure currentStreak and bestStreak are objects before writing
+//   if (typeof progress.currentStreak !== "object" || progress.currentStreak === null) {
+//     progress.currentStreak = {};
+//   }
+//   if (typeof progress.bestStreak !== "object" || progress.bestStreak === null) {
+//     progress.bestStreak = {};
+//   }
+
+//   progress.currentStreak[lvl] = current;
+//   progress.bestStreak[lvl] = Math.max(best, progress.bestStreak[lvl] || 0);
+
+//   saveProgress(progress);
+// }
 
 export function recordLevelScore(level, roundScore) {
   const progress = loadProgress();
@@ -126,7 +145,6 @@ export function recordLevelScore(level, roundScore) {
     progress.game_completed = true;
     window.save?.stats?.incrementWin("game10");
   }
-
   saveProgress(progress);
   return { progress, total };
 }
