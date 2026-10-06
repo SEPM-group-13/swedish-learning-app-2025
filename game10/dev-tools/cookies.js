@@ -3,7 +3,6 @@
 // ==============================================
 
 const COOKIE = "eatAndLearnProgress";
-const LANG_KEY = "eatAndLearnLang";
 export const SCORE_TO_PASS = 10;
 export const PLATEAU = 2;
 const COLUMNS = { recognition: 0, spelling: 1 };
@@ -74,15 +73,30 @@ export function resetProgress() {
   if (window.save?.stats) window.save.stats.clear("game10");
 }
 
+// Uses the language selected in the main menu (currentLanguage in /index.js).
+// The game runs in an iframe there, so read it from the parent window.
 export function getLang() {
-  const stored = localStorage.getItem(LANG_KEY);
-  if (stored === "sv" || stored === "en") return stored;
+  try {
+    const lang = new window.parent.Function("return currentLanguage")();
+    if (lang === "sv" || lang === "en") return lang;
+  } catch (e) {}
   return "en";
 }
 
-export function setLang(lang) {
-  localStorage.setItem(LANG_KEY, lang);
-}
+// Reload the page when the language is switched in the main menu while the game is open
+try {
+  const shownLang = getLang();
+  const onLangClick = () => {
+    if (getLang() !== shownLang) window.location.reload();
+  };
+  const langButtons = ["lang-eng", "lang-sv"]
+    .map((id) => window.parent.document.getElementById(id))
+    .filter(Boolean);
+  langButtons.forEach((btn) => btn.addEventListener("click", onLangClick));
+  window.addEventListener("pagehide", () => {
+    langButtons.forEach((btn) => btn.removeEventListener("click", onLangClick));
+  });
+} catch (e) {}
 
 export function getWeight(progress, id, mode) {
   return (progress.weights[id] || [0, 0])[COLUMNS[mode]] || 0;

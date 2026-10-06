@@ -28,10 +28,6 @@
           <p class="al-tagline" data-i18n="tagline"></p>
         </div>
         <div class="al-menu-meta">
-          <div class="al-lang">
-            <button type="button" data-lang="en">EN</button>
-            <button type="button" data-lang="sv">SV</button>
-          </div>
           <div class="al-learned"><strong id="learned-count">0</strong> / <span id="learned-total">0</span> <span data-i18n="learned"></span><button type="button" class="al-words-open" id="words-open"><i class="fa-solid fa-list"></i></button></div>
           <div class="al-bar"><span id="learned-bar"></span></div>
         </div>
@@ -80,7 +76,12 @@
         </div>
       </div>
       <div class="al-menu-foot">
-        <span data-i18n="footnote"></span>
+        <div class="al-proverb" tabindex="0">
+          <span class="al-proverb-kicker" data-i18n="proverbTitle"></span>
+          <span class="al-proverb-sv" id="proverb-sv"></span>
+          <span class="al-proverb-en" id="proverb-en"></span>
+          <span class="al-proverb-tip" id="proverb-meaning" role="tooltip"></span>
+        </div>
         <button type="button" class="al-link" id="reset-open" data-i18n="reset"></button>
       </div>
     </section>
