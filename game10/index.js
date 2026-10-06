@@ -30,7 +30,7 @@ function renderMenu() {
   document.getElementById("learned-count").textContent = String(learned);
   document.getElementById("learned-total").textContent = String(foods.length);
   document.getElementById("learned-bar").style.width = Math.min(100, (learned / total) * 100) + "%";
-  document.querySelectorAll("[data-score]").forEach((el) => {
+  document.querySelectorAll("[data-streak]").forEach((el) => {
     const level = Number(el.dataset.score);
     const streak = getStreak(level);
     const levelcurrentStreak = streak.current;
