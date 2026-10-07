@@ -15,6 +15,7 @@ let lang = "en";
 let cards = [];
 let index = 0;
 let known = [];
+let queue = [];
 
 function applyI18n() {
   document.documentElement.lang = lang;
@@ -54,14 +55,9 @@ function renderCard() {
   document.getElementById("back-en").textContent = card.en || "";
 }
 
-function nextUnknown() {
-  const unknown = [];
-  for (let i = 0; i < cards.length; i++) {
-    if (!known.includes(i)) unknown.push(i);
-  }
-  if (!unknown.length) return finish();
-  const pos = unknown.indexOf(index);
-  index = unknown[pos === -1 ? 0 : (pos + 1) % unknown.length];
+function showNext() {
+  if (!queue.length) return finish();
+  index = queue[0];
   renderCard();
   show(FRONT);
 }
@@ -77,6 +73,7 @@ function start() {
   preloadImages(cards);
   index = 0;
   known = [];
+  queue = cards.map((_, i) => i);
   if (!cards.length) return;
   renderCard();
   show(FRONT);
@@ -103,7 +100,8 @@ whenReady(() => {
   });
   document.getElementById("repeat").addEventListener("click", (e) => {
     e.stopPropagation();
-    nextUnknown();
+    queue.push(queue.shift());
+    showNext();
   });
   document.getElementById("got-it").addEventListener("click", (e) => {
     e.stopPropagation();
@@ -112,7 +110,8 @@ whenReady(() => {
       const id = cards[index]?.id;
       if (id) changeWeight(id, "recognition", 1);
     }
-    nextUnknown();
+    queue.shift();
+    showNext();
   });
   document.getElementById("again").addEventListener("click", start);
 });
