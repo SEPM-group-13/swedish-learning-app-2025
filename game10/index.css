@@ -124,6 +124,19 @@ body {
   cursor: not-allowed;
 }
 
+.al-empty-msg {
+  height: 20px;
+  margin: 8px 0 0;
+  font: 500 13.5px "Work Sans", sans-serif;
+  color: #9d0000;
+  text-align: center;
+  visibility: hidden;
+}
+
+.al-empty-msg.is-on {
+  visibility: visible;
+}
+
 .al-btn-green {
   min-height: 52px;
   padding: 14px 24px;

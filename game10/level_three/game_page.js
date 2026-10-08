@@ -42,7 +42,7 @@ const TEXT = {
     reviewLabel: (i, n) => `Review ${i} of ${n}`, 
     reviewGoodJob: "Good job reviewing all the words!",
     reviewPartial: (ok, n) => `You got ${ok} of ${n} right in the review. Keep practising!`,
-
+    emptyAnswer: "Please type an answer before submitting.",
   },
   sv: {
     reviewTitle: "Första genomgången klar",
@@ -56,6 +56,7 @@ const TEXT = {
     reviewLabel: (i, n) => `Repetition ${i} av ${n}`, 
     reviewGoodJob: "Bra jobbat med att repetera alla orden!",
     reviewPartial: (ok, n) => `Du fick ${ok} av ${n} rätt i repetitionen. Fortsätt öva!`,
+    emptyAnswer: "Du måste skriva ett svar innan du kan gå vidare.",
   }
 };
 
@@ -89,6 +90,26 @@ function show(name) {
 function hidePopups() {
   document.getElementById("popup-ok").classList.remove("is-on");
   document.getElementById("popup-no").classList.remove("is-on");
+}
+
+function hasAnswer() {
+  return document.getElementById("answer").value.trim().length > 0;
+}
+
+function hideEmptyMsg() {
+  document.getElementById("empty-msg").classList.remove("is-on");
+}
+
+function showEmptyMsg() {
+  const el = document.getElementById("empty-msg");
+  el.textContent = txt().emptyAnswer;
+  el.classList.add("is-on");
+}
+
+function updateSubmitState() {
+  const filled = hasAnswer();
+  document.getElementById("submit-btn").disabled = !filled;
+  if (filled) hideEmptyMsg();
 }
 
 function current() {
@@ -221,6 +242,9 @@ function renderPlay() {
   document.getElementById("play-img").alt = word.en || word.sv;
   document.getElementById("play-en").textContent = word.en || "";
   document.getElementById("answer").value = "";
+  document.getElementById("answer").value = "";
+  hideEmptyMsg();
+  updateSubmitState();
   updateHud();
   show("play");
   document.getElementById("answer").focus();
@@ -248,6 +272,10 @@ function startReview() {
 
 function submitAnswer() {
   if (document.querySelector(".al-popup.is-on")) return;
+  if (!hasAnswer()) {
+    showEmptyMsg();
+    return;
+  }
   const word = current();
   const res = activeResults();
   lastTyped = document.getElementById("answer").value;
@@ -340,11 +368,22 @@ whenReady(() => {
       window.location.href = "../index.html";
     });
   });
+
   document.getElementById("start").addEventListener("click", startRound);
   document.getElementById("spell-form").addEventListener("submit", (e) => {
     e.preventDefault();
     submitAnswer();
   });
+
+  const answerInput = document.getElementById("answer");
+  answerInput.addEventListener("input", updateSubmitState);
+  answerInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.repeat && !hasAnswer()) {
+      e.preventDefault();
+      showEmptyMsg();
+    }
+  });
+
   document.querySelectorAll("[data-char]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const input = document.getElementById("answer");
@@ -354,11 +393,14 @@ whenReady(() => {
       input.focus();
       const pos = start + 1;
       input.setSelectionRange(pos, pos);
+      updateSubmitState();
     });
   });
+
   document.querySelectorAll(".js-audio").forEach((btn) => {
     btn.addEventListener("click", () => playAudio(current()?.audio));
   });
+
   document.querySelectorAll(".al-popup .js-next").forEach((btn) => btn.addEventListener("click", nextQuestion));
   document.getElementById("start-review").addEventListener("click", startReview);
   document.getElementById("end-round").addEventListener("click", finishRound);
@@ -382,6 +424,7 @@ whenReady(() => {
     }
 
   });
+  
   document.addEventListener("keyup", (e) => {
     if (e.key === "Enter") {
       enterHeld = false;
