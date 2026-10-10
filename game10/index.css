@@ -947,6 +947,18 @@ body {
   color: var(--al-green);
 }
 
+.al-audio:hover {
+  background: #8a0000;
+}
+
+.al-audio-ok:hover {
+  background: #e8f2ec;
+}
+
+.al-listen:hover {
+  background: #8a0000;
+}
+
 .al-dim {
   opacity: 0.32;
 }
