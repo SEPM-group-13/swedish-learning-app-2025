@@ -454,6 +454,11 @@ body {
   animation-delay: calc(var(--i) * 25ms + 0.15s);
 }
 
+.al-pair-label {
+  font: 600 21px "Work Sans", sans-serif;
+  color: var(--al-ink);
+}
+
 .al-bar > span.is-half {
   background: var(--al-yellow);
 }
