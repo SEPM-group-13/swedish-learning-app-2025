@@ -454,6 +454,10 @@ body {
   animation-delay: calc(var(--i) * 25ms + 0.15s);
 }
 
+.al-match-grid .al-word {
+  padding-left: 28px;
+}
+
 .al-pair-label {
   font: 600 21px "Work Sans", sans-serif;
   color: var(--al-ink);
